@@ -1,0 +1,21 @@
+{
+  "name": "backend-devTinder",
+  "version": "1.0.0",
+  "description": "Backend for devTinder",
+  "main": "index.js",
+  "scripts": {
+    "dev" : "nodemon src/app.js",
+    "start": "node src/app.js"
+  },
+  "keywords": [
+    "nodejs",
+    "javascript",
+    "express",
+    "mongodb"
+  ],
+  "author": "Aman Negi",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
