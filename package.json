@@ -4,7 +4,7 @@
   "description": "Backend for devTinder",
   "main": "index.js",
   "scripts": {
-    "dev" : "nodemon src/app.js",
+    "dev": "nodemon src/app.js",
     "start": "node src/app.js"
   },
   "keywords": [
@@ -16,6 +16,7 @@
   "author": "Aman Negi",
   "license": "ISC",
   "dependencies": {
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "mongoose": "^9.8.1"
   }
 }
