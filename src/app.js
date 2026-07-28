@@ -15,10 +15,86 @@ app.post("/signup", async (req, res) => {
   console.log("New user created");
   try {
     await newUser.save();
-    res.send("The user created successfully.")
+    return res.send("The user created successfully.")
   }
   catch (err) {
-    res.status(400).send("Somethng bad happened!");
+    return res.status(400).send("Somethng bad happened!");
+  }
+
+})
+
+app.get("/user/:id", async (req, res) => {
+  const id = req.params.id;
+
+  try {
+    const user = await User.findById(id).exec();
+    if (user === null) {
+      return res.status(404).send("User not found.");
+    }
+    else {
+      return res.json({ user });
+    }
+  }
+
+  catch (err) {
+    console.log(err.message);
+    return res.status(500).send("Somethinig bad happened.");
+  }
+
+})
+
+app.delete("/user/:id", async (req, res) => {
+  const id = req.params.id;
+
+  try {
+    const isDeleted = await User.findByIdAndDelete( id ).exec();
+    if (!isDeleted) {
+      return res.status(404).send("User not found.");
+    }
+    else {
+      return res.send("User is deleted.");
+    }
+  }
+
+  catch (err) {
+    console.log(err.message);
+    return res.status(500).send("Somethinig bad happened.");
+  }
+
+})
+
+app.patch("/user/", async (req, res)=>{
+  const id = req.body.userId;
+  const data = req.body;
+  try{
+    const isUpdated = await User.findByIdAndUpdate(id, data).exec();
+    if(!isUpdated){
+      return res.status(404).send("User not found.");
+    }
+    else{
+      return res.send("Updated successfully");
+    }
+  }
+  catch(err){
+    console.log(err.message);
+    return res.status(400).send("Something went wrong.");
+  }
+})
+
+app.get("/users", async (req, res) => {
+  try {
+    const users = await User.find({}).exec();
+    if (users.length === 0) {
+      return res.status(404).send("User not found.");
+    }
+    else {
+      return res.json({ users });
+    }
+  }
+
+  catch (err) {
+    console.log(err.message);
+    return res.status(500).send("Somethinig bad happened.");
   }
 
 })
@@ -33,7 +109,6 @@ connectDB().then(() => {
   console.error("Cannot connect to databaase");
 });
 
-// app.use(express.json());
 
 // const users = [
 //   {
