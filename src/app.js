@@ -8,10 +8,10 @@ const app = express();
 app.use(express.json());
 
 app.post("/signup", async (req, res) => {
-  const info = req.body;
+  const data = req.body;
 
   // Crating an instance of the User model
-  const newUser = new User(info)
+  const newUser = new User(data)
   console.log("New user created");
   try {
     await newUser.save();
@@ -63,15 +63,33 @@ app.delete("/user", async (req, res) => {
 
 })
 
-app.patch("/user", async (req, res) => {
-  const id = req.body.userId;
+app.patch("/user/:id", async (req, res) => {
+  const id = req.params?.id;
   const data = req.body;
   try {
+
+    if(data.skills.length > 15){
+      throw new Error("Skills cannot be more than 15.");
+    }
+    
+    const ALLOWED_UPDATES = [
+      "photoUrl",
+      "about",
+      "gender",
+      "age",
+      "skills",
+    ]
+
+    const isUpdateAllowed = Object.keys(data).every(k=>ALLOWED_UPDATES.includes(k));
+    
+    if(!isUpdateAllowed) {
+      throw new Error("Update not allowed."); 
+    }
+    
     const isUpdated = await User.findByIdAndUpdate(id, data, {
       runValidators: true,
-      // returnDocument:'after'
+      returnDocument:'after'
     }).exec();
-      console.log(isUpdated);
     if (!isUpdated) {
       return res.status(404).send("User not found.");
     }

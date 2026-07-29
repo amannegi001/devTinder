@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const validator = require('validator')
 
 const { Schema } = mongoose;
 
@@ -26,19 +27,31 @@ const userSchema = new Schema({
     },
     age: {
         type : Number,
-        min : 18
+        min : 18,
+        max : 100
     },
     city: String,
     emailId: {
         type: String,
+        validate(value){
+            if(!validator.isEmail(value)){
+                throw new Error("Invalid Email: "+value);
+            }
+        },
         required: true,
         lowercase: true,
         trim: true,
-        unique : true
+        unique : true,
+        immutable : true
     },
     password: {
         type: String,
         required: true,
+        validate(value){
+            if(!validator.isStrongPassword(value)){
+                throw new Error("Weak Password: "+value);
+            }
+        },
     },
     phoneNumber: Number,
     about: {
@@ -47,6 +60,11 @@ const userSchema = new Schema({
     },
     photoUrl: {
         type: String,
+        validate(value){
+            if(!validator.isURL(value)){
+                throw new Error("Invalid URL: "+value);
+            }
+        },
         default : "https://www.pngall.com/profile-png/download/51543/"  
     },
     skills: {
