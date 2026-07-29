@@ -5,10 +5,10 @@ const { User } = require("./models/user");
 // const { userAuth } = require("./utils/user.js")
 
 const app = express();
-app.use(express.json())
+app.use(express.json());
 
 app.post("/signup", async (req, res) => {
-  const info = req.body.user;
+  const info = req.body;
 
   // Crating an instance of the User model
   const newUser = new User(info)
@@ -18,16 +18,16 @@ app.post("/signup", async (req, res) => {
     return res.send("The user created successfully.")
   }
   catch (err) {
-    return res.status(400).send("Somethng bad happened!");
+    return res.status(400).send(err.message);
   }
 
 })
 
-app.get("/user/:id", async (req, res) => {
-  const id = req.params.id;
+app.get("/user", async (req, res) => {
+  const id = req.body.userId;
 
   try {
-    const user = await User.findById(id).exec();
+    const user = await User.findById(id, "firstName emailId password").exec();
     if (user === null) {
       return res.status(404).send("User not found.");
     }
@@ -43,11 +43,11 @@ app.get("/user/:id", async (req, res) => {
 
 })
 
-app.delete("/user/:id", async (req, res) => {
-  const id = req.params.id;
+app.delete("/user", async (req, res) => {
+  const id = req.body.userId;
 
   try {
-    const isDeleted = await User.findByIdAndDelete( id ).exec();
+    const isDeleted = await User.findByIdAndDelete(id).exec();
     if (!isDeleted) {
       return res.status(404).send("User not found.");
     }
@@ -63,25 +63,29 @@ app.delete("/user/:id", async (req, res) => {
 
 })
 
-app.patch("/user/", async (req, res)=>{
+app.patch("/user", async (req, res) => {
   const id = req.body.userId;
   const data = req.body;
-  try{
-    const isUpdated = await User.findByIdAndUpdate(id, data).exec();
-    if(!isUpdated){
+  try {
+    const isUpdated = await User.findByIdAndUpdate(id, data, {
+      runValidators: true,
+      // returnDocument:'after'
+    }).exec();
+      console.log(isUpdated);
+    if (!isUpdated) {
       return res.status(404).send("User not found.");
     }
-    else{
+    else {
       return res.send("Updated successfully");
     }
   }
-  catch(err){
+  catch (err) {
     console.log(err.message);
-    return res.status(400).send("Something went wrong.");
+    return res.status(400).send("UPDATE FAILED : " + err.message);
   }
 })
 
-app.get("/users", async (req, res) => {
+app.get("/feed", async (req, res) => {
   try {
     const users = await User.find({}).exec();
     if (users.length === 0) {
@@ -233,49 +237,3 @@ connectDB().then(() => {
 //   }
 // ];
 
-// app.use("/admin", adminAuth);
-// app.use("/user", userAuth);
-
-// app.get("/users", (req, res) => {
-//   try{
-//     return res.status(200).json({ users });
-//   }
-//   catch(err){
-//     res.status(500).json({
-//       message : "Something went wrong."
-//     })
-//   }
-// });
-
-// app.use("/", (err, req, res, next)=>{
-//   console.log(err);
-//   return res.status(500).json({
-//     error : err.message
-//   })
-// })
-
-// app.get("/user/:id", (req, res) => {
-//   const id = Number(req.params.id);
-//   const user = users.find((user) => {
-//     return user.id === id;
-//   });
-//   res.status(200).json({ user });
-// });
-
-// app.delete("/user/:id", (req, res) => {
-//   const id = Number(req.params.id);
-//   const index = users.findIndex(user => user.id === id);
-
-//   if (index === -1) {
-//     return res.status(404).json({
-//       message: "User not found."
-//     });
-//   }
-
-//   users.splice(index, 1);
-//   return res.status(200).json({
-//     message: "User deleted successfully."
-//   })
-
-
-// })
