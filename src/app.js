@@ -1,26 +1,71 @@
 const express = require("express");
 const { connectDB } = require("./config/database")
 const { User } = require("./models/user");
-// const { adminAuth } = require("./utils/admin.js")
-// const { userAuth } = require("./utils/user.js")
+const validator = require('validator');
+const { validateSignUpData, validateloginData } = require('./utils/validation')
+const bcrypt = require('bcrypt');
+
+// const { adminAuth } = require("./middlewares/admin.js")
+// const { userAuth } = require("./middlewares/user.js")
 
 const app = express();
 app.use(express.json());
 
 app.post("/signup", async (req, res) => {
+
   const data = req.body;
 
-  // Crating an instance of the User model
-  const newUser = new User(data)
-  console.log("New user created");
+  const { firstName, lastName, emailId, password } = data;
+
   try {
+    // Validation
+    validateSignUpData(data);
+
+    // Encryption
+    const hashPassword = await bcrypt.hash(password, 10);
+
+    // Crating an instance of the User model
+    const newUser = new User({
+      firstName,
+      lastName,
+      emailId,
+      password: hashPassword
+    })
+
     await newUser.save();
     return res.send("The user created successfully.")
   }
   catch (err) {
-    return res.status(400).send(err.message);
+    return res.status(400).send("ERROR: " + err.message);
   }
 
+})
+
+app.post("/login", async (req, res) => {
+  const data = req.body;
+
+  const { emailId, password } = data;
+
+  try {
+    validateloginData(data);
+    const user = await User.findOne({ emailId }, 'password').exec();
+    if (!user) {
+      throw new Error("Invalid credentials")
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (isPasswordValid) {
+      return res.send("Logged in successfully.");
+    }
+    else {
+      throw new Error("Invalid credentials");
+    }
+
+  }
+  catch (err) {
+    return res.status(400).send("ERROR: " + err.message);
+  }
 })
 
 app.get("/user", async (req, res) => {
@@ -68,10 +113,10 @@ app.patch("/user/:id", async (req, res) => {
   const data = req.body;
   try {
 
-    if(data.skills.length > 15){
+    if (data.skills.length > 15) {
       throw new Error("Skills cannot be more than 15.");
     }
-    
+
     const ALLOWED_UPDATES = [
       "photoUrl",
       "about",
@@ -80,15 +125,15 @@ app.patch("/user/:id", async (req, res) => {
       "skills",
     ]
 
-    const isUpdateAllowed = Object.keys(data).every(k=>ALLOWED_UPDATES.includes(k));
-    
-    if(!isUpdateAllowed) {
-      throw new Error("Update not allowed."); 
+    const isUpdateAllowed = Object.keys(data).every(k => ALLOWED_UPDATES.includes(k));
+
+    if (!isUpdateAllowed) {
+      throw new Error("Update not allowed.");
     }
-    
+
     const isUpdated = await User.findByIdAndUpdate(id, data, {
       runValidators: true,
-      returnDocument:'after'
+      returnDocument: 'after'
     }).exec();
     if (!isUpdated) {
       return res.status(404).send("User not found.");

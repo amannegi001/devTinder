@@ -17,41 +17,35 @@ const userSchema = new Schema({
     },
     gender: {
         type: String,
-        validate(value){
+        validate(value) {
             value = value.toLowerCase();
-            if(!['female', 'male', 'others'].includes(value)){
+            if (!['female', 'male', 'others'].includes(value)) {
                 throw new Error("Invalid gender!");
             }
-        },
-        required : true
+        }
     },
     age: {
-        type : Number,
-        min : 18,
-        max : 100
+        type: Number,
+        min: 18,
+        max: 100
     },
     city: String,
     emailId: {
         type: String,
-        validate(value){
-            if(!validator.isEmail(value)){
-                throw new Error("Invalid Email: "+value);
+        validate(value) {
+            if (!validator.isEmail(value)) {
+                throw new Error("Invalid Email: " + value);
             }
         },
         required: true,
         lowercase: true,
         trim: true,
-        unique : true,
-        immutable : true
+        unique: true,
+        immutable: true
     },
     password: {
         type: String,
         required: true,
-        validate(value){
-            if(!validator.isStrongPassword(value)){
-                throw new Error("Weak Password: "+value);
-            }
-        },
     },
     phoneNumber: Number,
     about: {
@@ -60,12 +54,12 @@ const userSchema = new Schema({
     },
     photoUrl: {
         type: String,
-        validate(value){
-            if(!validator.isURL(value)){
-                throw new Error("Invalid URL: "+value);
+        validate(value) {
+            if (!validator.isURL(value)) {
+                throw new Error("Invalid URL: " + value);
             }
         },
-        default : "https://www.pngall.com/profile-png/download/51543/"  
+        default: "https://www.pngall.com/profile-png/download/51543/"
     },
     skills: {
         type: [String]
