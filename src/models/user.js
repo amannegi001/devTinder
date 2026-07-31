@@ -52,6 +52,8 @@ const userSchema = new Schema({
     phoneNumber: Number,
     about: {
         type: String,
+        minLength: 2,
+        maxLength: 150,
         default: "Hey there, let's be friends."
     },
     photoUrl: {
@@ -76,9 +78,10 @@ userSchema.methods.getJWT = async function () {
     return token;
 }
 
-userSchema.methods.validatePassword = async function(passwordInputByUser){
+userSchema.methods.validatePassword = async function (passwordInputByUser) {
+
     const isPasswordValid = await bcrypt.compare(passwordInputByUser, this.password);
-    
+
     return isPasswordValid;
 }
 
