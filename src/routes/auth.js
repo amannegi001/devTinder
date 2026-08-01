@@ -13,12 +13,12 @@ router.post("/signup", async (req, res) => {
 
     try {
         // Validation
-        validateSignUpData(data);
+        await validateSignUpData(data);
 
         // Encryption
         const hashPassword = await bcrypt.hash(password, 10);
 
-        // Crating an instance of the User model
+        // Creating an instance of the User model
         const newUser = new User({
             firstName,
             lastName,
