@@ -17,9 +17,9 @@ async function validateSignUpData(body) {
     if (!validator.isStrongPassword(password)) {
         throw new Error("Weak password.");
     }
-    const isUserExists = await User.findOne({emailId});
+    const isUserExists = await User.findOne({ emailId });
 
-    if(isUserExists) {
+    if (isUserExists) {
         throw new Error("User already exists");
     }
 }
@@ -85,14 +85,14 @@ async function validateEditPassword(body, user) {
 async function validateConnectionRequestInfo(status, receiverId, senderId) {
     const allowedStatuses = ["interested", "ignored"];
 
-    const receiver = await User.findById(receiverId);    
-
-    if(!receiver){
-        throw new Error("Receiver not found");
-    }
-    
     if (!allowedStatuses.includes(status)) {
         throw new Error("Invalid status type: " + status);
+    }
+
+    const receiver = await User.findById(receiverId);
+
+    if (!receiver) {
+        throw new Error("Receiver not found");
     }
 
     const isConnectionRequestExist = await ConnectionRequest.findOne({
@@ -108,4 +108,43 @@ async function validateConnectionRequestInfo(status, receiverId, senderId) {
     return receiver;
 }
 
-module.exports = { validateSignUpData, validateloginData, validateEditProfileData, validateEditPassword, validateConnectionRequestInfo }
+async function validateReviewRequestInfo(status, receiverId, senderId) {
+    const allowedFields = ["accepted", "rejected"];
+    
+
+    if (!allowedFields.includes(status)) {
+        throw new Error("Invalid status");
+    }
+    const alreadyConnection = await ConnectionRequest.findOne({
+        $or : [
+            {status : "accepted"},
+            {status : "rejected"}
+        ]
+    })  
+    
+    if(alreadyConnection){
+        throw new Error("Status already present: " + alreadyConnection.status);
+    }
+    
+    const isReqValid = await ConnectionRequest.findOne({
+        $and: [
+            { senderId }, { receiverId },
+            {status : "interested"}
+        ]
+    })
+
+    if (!isReqValid) {
+        throw new Error("No request found");
+    }
+
+    return isReqValid;
+}
+
+module.exports = {
+    validateSignUpData,
+    validateloginData,
+    validateEditProfileData,
+    validateEditPassword,
+    validateConnectionRequestInfo,
+    validateReviewRequestInfo
+}
