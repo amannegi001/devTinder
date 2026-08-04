@@ -80,13 +80,18 @@ router.get("/user/requests/received", async (req, res) => {
 
 })
 
-router.get("/user/feed", async (req, res) => {
+router.get("/feed", async (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    let limit = parseInt(req.query.limit) || 10;
+
     const loggedInUser = req.user;
 
     const USER_SAFE_DATA = "firstName lastName age gender about photoUrl skills";
 
     const loggedInUserId = loggedInUser._id;
     try {
+        limit = limit > 50 ? 50 : limit;
+        const skip = (page - 1) * limit;
 
         const existingConnections = await ConnectionRequest.find({
             $or: [
@@ -110,7 +115,7 @@ router.get("/user/feed", async (req, res) => {
             _id: {
                 $nin: [...relatedUserIds, loggedInUserId]
             }
-        }).select(USER_SAFE_DATA).lean();
+        }).select(USER_SAFE_DATA).skip(skip).limit(limit).lean();
 
         res.json({
             message: "Below are the profiles of all the users ",
